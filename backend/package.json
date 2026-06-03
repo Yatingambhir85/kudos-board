@@ -1,0 +1,14 @@
+{
+  "name": "kudosboard-backend",
+  "version": "1.0.0",
+  "description": "Backend API for KudosBoard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^4.22.2",
+    "mongoose": "^8.24.0"
+  }
+}

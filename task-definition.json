@@ -1,0 +1,55 @@
+{
+  "family": "kudos-taskdef",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "containerDefinitions": [
+    {
+      "name": "kudos-database",
+      "image": "mongo:7.0",
+      "portMappings": [{"containerPort": 27017, "protocol": "tcp"}],
+      "environment": [{"name": "MONGO_INITDB_DATABASE", "value": "kudosboard"}],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/kudos",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "database"
+        }
+      }
+    },
+    {
+      "name": "kudos-backend",
+      "image": "REPLACE_BACKEND_ECR_URI:latest",
+      "portMappings": [{"containerPort": 5000, "protocol": "tcp"}],
+      "environment": [
+        {"name": "MONGO_URI", "value": "mongodb://kudos-database:27017/kudosboard"},
+        {"name": "PORT", "value": "5000"}
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/kudos",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "backend"
+        }
+      }
+    },
+    {
+      "name": "kudos-frontend",
+      "image": "REPLACE_FRONTEND_ECR_URI:latest",
+      "portMappings": [{"containerPort": 3000, "protocol": "tcp"}],
+      "environment": [{"name": "VITE_API_URL", "value": "http://kudos-backend:5000"}],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/kudos",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "frontend"
+        }
+      }
+    }
+  ],
+  "executionRoleArn": "arn:aws:iam::REPLACE_ACCOUNT_ID:role/ecsTaskExecutionRole"
+}

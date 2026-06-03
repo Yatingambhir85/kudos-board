@@ -1,0 +1,49 @@
+version: 0.2
+
+env:
+  variables:
+    NODE_OPTIONS: "--max-old-space-size=2048"
+
+phases:
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+      - echo "Building images with tag: $IMAGE_TAG"
+
+  build:
+    commands:
+      - echo "Build started on $(date)"
+      - echo "Building backend image..."
+      - docker build --cache-from $REPOSITORY_URI/kudos-backend:latest -t $REPOSITORY_URI/kudos-backend:$IMAGE_TAG -t $REPOSITORY_URI/kudos-backend:latest ./backend
+      - echo "Building frontend image..."
+      - docker build --cache-from $REPOSITORY_URI/kudos-frontend:latest -t $REPOSITORY_URI/kudos-frontend:$IMAGE_TAG -t $REPOSITORY_URI/kudos-frontend:latest ./frontend
+      - echo "Build completed on $(date)"
+
+  post_build:
+    commands:
+      - echo "Pushing images to ECR..."
+      - docker push $REPOSITORY_URI/kudos-backend:$IMAGE_TAG
+      - docker push $REPOSITORY_URI/kudos-backend:latest
+      - docker push $REPOSITORY_URI/kudos-frontend:$IMAGE_TAG
+      - docker push $REPOSITORY_URI/kudos-frontend:latest
+      - echo "Creating image definitions file..."
+      - printf '[{"name":"kudos-backend","imageUri":"%s"},{"name":"kudos-frontend","imageUri":"%s"}]' $REPOSITORY_URI/kudos-backend:$IMAGE_TAG $REPOSITORY_URI/kudos-frontend:$IMAGE_TAG > imagedefinitions.json
+      - cat imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json
+  name: BuildArtifact
+  discard-paths: yes
+
+cache:
+  paths:
+    - '/root/.npm/**/*'
+    - '/root/.docker/**/*'
+
+logs:
+  - /aws/codebuild/kudos-build

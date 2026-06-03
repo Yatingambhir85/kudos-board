@@ -1,0 +1,32 @@
+services:
+  database:
+    image: mongo:7.0
+    container_name: kudos_db
+    ports:
+      - "27217:27017" # Keeps native Linux Mongo from clashing
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: kudos_backend
+    ports:
+      - "5050:5000" # Maps container port 5000 out to host port 5050
+    environment:
+      - MONGO_URI=mongodb://database:27017/kudosboard
+      - PORT=5000
+    depends_on:
+      - database
+
+  frontend:
+    build: ./frontend
+    container_name: kudos_frontend
+    ports:
+      - "8080:3000" # Maps the default Vite dev port (3000) straight out to 8080
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:5050
+
+volumes:
+  mongo_data:
