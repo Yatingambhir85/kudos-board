@@ -32,7 +32,6 @@ jobs:
       - name: Use the Public URL for testing
         run: |
             docker ps
-            docker logs task-manager-app --tail 20
             echo "Your app is live at: ${{ steps.cloudflare_tunnel.outputs.url }}"
       - name: Keep the runner active
         run: sleep 120 # Increase this as per your need
