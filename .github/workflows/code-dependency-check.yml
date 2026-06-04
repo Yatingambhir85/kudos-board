@@ -15,16 +15,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+      - name: Install ESLint in Root
+        run: npm install --save-dev eslint @eslint/js
       - name: Install & Run Backend Linter
         run: |
           cd backend/
           npm ci
-          npx eslint "*.js"
+          cd ..
+          npx eslint "backend/**/*.js"
       - name: Install & Run Frontend Linter
         run: |
          cd frontend/
          npm ci
-         npx eslint "*.js"
+         cd ..
+         npx eslint "frontend/**/*.js"
       - name: Run Audit Fix
         run: |
           cd backend && npm audit fix --package-lock-only || true
