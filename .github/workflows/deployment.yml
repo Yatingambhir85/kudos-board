@@ -1,0 +1,38 @@
+name: Deploy using Docker Compose
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Code Checkout
+        uses: actions/checkout@v4
+      - name: Install Docker Compose
+        run: | 
+          sudo apt update
+          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+      - name: Deploy
+        run: docker-compose down --remove-orphans && docker-compose up --build
+      - name: Install cloudeflared
+        uses: AnimMouse/setup-cloudflared@v2
+      - name: Start Tunnel & Capture URL
+        id: cloudflare_tunnel
+        run: |
+           cloudflared tunnel --url http://127.0.0.1:3000 > tunnel.log 2>&1 &
+           echo "Waiting for Cloudflare URL..."
+           timeout 120s bash -c 'until grep -o "https://[^ ]*\.trycloudflare\.com" tunnel.log; do sleep 2; done' > url.txt
+           TUNNEL_URL=$(cat url.txt)
+           echo "url=$TUNNEL_URL" >> $GITHUB_OUTPUT
+           echo "Connection established!"
+           echo "Your app is live at: $TUNNEL_URL"
+      - name: Use the Public URL for testing
+        run: |
+            docker ps
+            docker logs task-manager-app --tail 20
+            echo "Your app is live at: ${{ steps.cloudflare_tunnel.outputs.url }}"
+      - name: Keep the runner active
+        run: sleep 120 # Increase this as per your need
