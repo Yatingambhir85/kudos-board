@@ -1,0 +1,22 @@
+name: Code Dependency Check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-dept: 0
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run Linter
+        run: npx eslint "backend/*.js" "frontend/*.js"
+      - name: Run Dependencies Check & Fix
+        run: |
+          npm audit fix
