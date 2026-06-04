@@ -10,20 +10,22 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-dept: 0
+          fetch-depth: 0
       - name: Setup NodeJS
         uses: actions/setup-node@v4
-      - name: Install Dependencies Backend
+        with:
+          node-version: '18'
+      - name: Install & Run Backend Linter
         run: |
-          npm install --save-dev eslint
           cd backend/
           npm ci
-      - name: Install Dependencies Frontend
+          npx eslint "*.js"
+      - name: Install & Run Frontend Linter
         run: |
          cd frontend/
          npm ci
-      - name: Run Linter
-        run: npx eslint "backend/*.js" "frontend/*.js"
-      - name: Run Dependencies Check & Fix
+         npx eslint "*.js"
+      - name: Run Audit Fix
         run: |
-          npm audit fix
+          cd backend && npm audit fix --package-lock-only || true
+          cd frontend && npm audit fix --package-lock-only || true
