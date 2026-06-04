@@ -22,13 +22,13 @@ jobs:
           cd backend/
           npm ci
           cd ..
-          npx eslint "backend/**/*.js"
+          npx eslint "backend/**/*.js" --fix
       - name: Install & Run Frontend Linter
         run: |
          cd frontend/
          npm ci
          cd ..
-         npx eslint "frontend/**/*.js"
+         npx eslint "frontend/**/*.js" --fix
       - name: Run Audit Fix
         run: |
           cd backend && npm audit fix --package-lock-only || true
