@@ -21,7 +21,7 @@ export default [
     },
     rules: {
       "no-undef": "error",
-      "semi": ["error", "always"]
+       "semi": "off" 
     }
   },
   {
