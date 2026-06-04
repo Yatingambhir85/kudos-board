@@ -17,14 +17,14 @@ jobs:
       - name: Build & Push to Dockerhub - Frontend
         uses: docker/build-push-action@v6
         with:
-         context: ./frontend/Dockerfile
+         context: frontend/Dockerfile
          push: true
          tags: |
            ${{ vars.DOCKERHUB_USERNAME }}/kudos-board-frontend:latest
       - name: Build & Push to Dockerhub - Backend
         uses: docker/build-push-action@v6
         with:
-         context: ./backend/Dockerfile
+         context: backend/Dockerfile
          push: true
          tags: |
            ${{ vars.DOCKERHUB_USERNAME }}/kudos-board-backend:latest
