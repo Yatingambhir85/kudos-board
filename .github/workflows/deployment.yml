@@ -16,7 +16,7 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
       - name: Deploy
-        run: docker-compose down --remove-orphans && docker-compose up --build
+        run: docker-compose down --remove-orphans && docker-compose up --build -d
       - name: Install cloudeflared
         uses: AnimMouse/setup-cloudflared@v2
       - name: Start Tunnel & Capture URL
